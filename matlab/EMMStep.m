@@ -15,13 +15,13 @@ function params = EMMStep(X,K,W)
         weighted_avg = W(:, j)' * X;
         % Divide by the sum of the weights.
         weighted_avg = weighted_avg ./ sum(W(:, j), 1);
-        mu(j, :) = weighted_avg;
+        weighted_means(j, :) = weighted_avg;
         %================================================================================%
         % Calculate the covariance matrix for cluster 'j' by taking the 
         % weighted average of the covariance for each training example.
         sigma_k = zeros(2, 2);
         % Subtract the cluster mean from all data points.
-        Xm = bsxfun(@minus, X, mu(j, :));
+        Xm = bsxfun(@minus, X, weighted_means(j, :));
         % Calculate the contribution of each training example to the covariance matrix.
         for i = 1 : N
             sigma_k = sigma_k + (W(i, j) .* (Xm(i, :)' * Xm(i, :)));
@@ -30,8 +30,10 @@ function params = EMMStep(X,K,W)
         covar{j} = sigma_k ./ sum(W(:, j));
         %================================================================================%
     end
+    % Transpose the means for each cluster and store them in the
+    % corresponding index as a struct
     for i=1:K
-        means{i} = mu(i,:)';
+        means{i} = weighted_means(i,:)';
     end
     params.means = means;
     params.covar = covar;
